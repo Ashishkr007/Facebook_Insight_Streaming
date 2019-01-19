@@ -60,64 +60,53 @@ public class FBPostConsumptionInsightByType {
 	static String POST_INSIGH_TO = "";
 	static String PAGE_NAME = "";
 	static String PAGE_ID = "";
-	static String CurrentDate="";
+	static String CurrentDate = "";
 
 	public static void main(String[] args) throws Exception {
 		propFilePath = args[0].toString();
 		FBPostConsumptionInsightByType obj_FBPage = new FBPostConsumptionInsightByType();
 		String cur_datetime = obj_FBPage.getCurrentDateTime("yyyyMMdd_HHmmss");
 
-		POST_INSIGH_FROM = obj_FBPage.getPropValue(propFilePath,
-				"POST_INSIGH_FROM");
-		POST_INSIGH_TO = obj_FBPage.getPropValue(propFilePath,
-				"POST_INSIGH_TO");
+		POST_INSIGH_FROM = obj_FBPage.getPropValue(propFilePath, "POST_INSIGH_FROM");
+		POST_INSIGH_TO = obj_FBPage.getPropValue(propFilePath, "POST_INSIGH_TO");
 		PAGE_NAME = obj_FBPage.getPropValue(propFilePath, "PAGE_NAME");
 		PAGE_ID = obj_FBPage.getPropValue(propFilePath, "PAGE_ID");
 
-		if (POST_INSIGH_FROM.equalsIgnoreCase("")
-				& POST_INSIGH_TO.equalsIgnoreCase("")) {
+		if (POST_INSIGH_FROM.equalsIgnoreCase("") & POST_INSIGH_TO.equalsIgnoreCase("")) {
 			POST_INSIGH_TO = obj_FBPage.getDate("yyyy-MM-dd", 0);
 			POST_INSIGH_FROM = obj_FBPage.getDate("yyyy-MM-dd", -7);
 		}
-		CurrentDate=obj_FBPage.getDate("yyyy-MM-dd", 0);
+		CurrentDate = obj_FBPage.getDate("yyyy-MM-dd", 0);
 
-		POST_CONSUMPTIONS_INSIGHT_LOG_PATH = obj_FBPage.getPropValue(
-				propFilePath, "POST_CONSUMPTIONS_INSIGHT_LOG_PATH")
-				+ "_"
-				+ cur_datetime + ".log";
-		obj_FBPage.write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH,
-				"==> DATA WILL BE DOWNLOADED FOR FACEBOOK PAGE :"
-						+ PAGE_NAME + "(" + PAGE_ID
-						+ ") FOR DURATION BETWEEN " + POST_INSIGH_FROM
-						+ " AND " + POST_INSIGH_TO);
+		POST_CONSUMPTIONS_INSIGHT_LOG_PATH = obj_FBPage.getPropValue(propFilePath, "POST_CONSUMPTIONS_INSIGHT_LOG_PATH")
+				+ "_" + cur_datetime + ".log";
+		obj_FBPage.write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> DATA WILL BE DOWNLOADED FOR FACEBOOK PAGE :"
+				+ PAGE_NAME + "(" + PAGE_ID + ") FOR DURATION BETWEEN " + POST_INSIGH_FROM + " AND " + POST_INSIGH_TO);
 
-		obj_FBPage.write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH,
-				"==> READING ACCESS TOKEN");
-		String ACCESS_TOKEN = obj_FBPage.getPropValue(propFilePath,
-				"ACCESS_TOKEN");
-		/*facebookClient = new DefaultFacebookClient(ACCESS_TOKEN,
-				Version.VERSION_2_10);*/
+		obj_FBPage.write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> READING ACCESS TOKEN");
+		String ACCESS_TOKEN = obj_FBPage.getPropValue(propFilePath, "ACCESS_TOKEN");
+		/*
+		 * facebookClient = new DefaultFacebookClient(ACCESS_TOKEN,
+		 * Version.VERSION_2_10);
+		 */
 		facebookClient = new DefaultFacebookClient(ACCESS_TOKEN);
 		List<Connection<Insight>> post_insights = obj_FBPage.fetchObject();
-		List<Map<String, String>> clist_insights = obj_FBPage
-				.parseJSONInsight(post_insights);
+		List<Map<String, String>> clist_insights = obj_FBPage.parseJSONInsight(post_insights);
 		obj_FBPage.writecsv(clist_insights);
 	}
 
 	public List<Connection<Insight>> fetchObject() throws IOException {
 		String PAGE_ID = getPropValue(propFilePath, "PAGE_ID");
-		String POST_CONSUMPTIONS_INSIGHT_BY_TYPE_MATRIX = getPropValue(
-				propFilePath, "POST_CONSUMPTIONS_INSIGHT_BY_TYPE_MATRIX");
+		String POST_CONSUMPTIONS_INSIGHT_BY_TYPE_MATRIX = getPropValue(propFilePath,
+				"POST_CONSUMPTIONS_INSIGHT_BY_TYPE_MATRIX");
 		String POST_FIELDS = getPropValue(propFilePath, "POST_FIELDS");
 		write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> READING POSTS ID");
 		Connection<Post> posts = null;
 		try {
-			posts = facebookClient.fetchConnection(PAGE_ID + "/posts",
-					Post.class, Parameter.with("since", POST_INSIGH_FROM),
-					Parameter.with("until", POST_INSIGH_TO));
+			posts = facebookClient.fetchConnection(PAGE_ID + "/posts", Post.class,
+					Parameter.with("since", POST_INSIGH_FROM), Parameter.with("until", POST_INSIGH_TO));
 		} catch (Exception e) {
-			write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH,
-					"==> EXCEPTION WHILE READING POSTS ID ==> " + e);
+			write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> EXCEPTION WHILE READING POSTS ID ==> " + e);
 			System.out.println(e);
 			System.exit(0);
 		}
@@ -126,40 +115,31 @@ public class FBPostConsumptionInsightByType {
 		List<Connection<Insight>> list_post_insights = new ArrayList<Connection<Insight>>();
 		list_post_fields = new ArrayList<JsonObject>();
 		while (posts_it.hasNext()) {
-			write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH,
-					"==> READING PAGE POST INSIGHTS");
+			write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> READING PAGE POST INSIGHTS");
 			List<Post> list_posts = posts_it.next();
 			try {
 				for (Post post : list_posts) {
-					post_insights = facebookClient.fetchConnection(post.getId()
-							+ "/insights/"
-							+ POST_CONSUMPTIONS_INSIGHT_BY_TYPE_MATRIX,
-							Insight.class);
+					post_insights = facebookClient.fetchConnection(
+							post.getId() + "/insights/" + POST_CONSUMPTIONS_INSIGHT_BY_TYPE_MATRIX, Insight.class);
 					list_post_insights.add(post_insights);
 					write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> PENDING");
 				}
 			} catch (Exception e) {
-				write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH,
-						"==> EXCEPTION WHILE READING PAGE POST INSIGHTS ==> "
-								+ e);
+				write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> EXCEPTION WHILE READING PAGE POST INSIGHTS ==> " + e);
 				System.out.println(e);
 				System.exit(0);
 			}
-			write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH,
-					"==> READING PAGE POST FIELDS");
+			write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> READING PAGE POST FIELDS");
 			try {
 				for (Post post : list_posts) {
-					JsonObject post_fields = facebookClient.fetchObject(
-							post.getId(), JsonObject.class,
-							Parameter.with("fields", POST_FIELDS),
-							Parameter.with("since", POST_INSIGH_FROM),
+					JsonObject post_fields = facebookClient.fetchObject(post.getId(), JsonObject.class,
+							Parameter.with("fields", POST_FIELDS), Parameter.with("since", POST_INSIGH_FROM),
 							Parameter.with("until", POST_INSIGH_TO));
 					list_post_fields.add(post_fields);
 					write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> PENDING");
 				}
 			} catch (Exception e) {
-				write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH,
-						"==> EXCEPTION WHILE READING PAGE POST FIELDS ==> " + e);
+				write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> EXCEPTION WHILE READING PAGE POST FIELDS ==> " + e);
 				System.out.println(e);
 				System.exit(0);
 			}
@@ -167,10 +147,8 @@ public class FBPostConsumptionInsightByType {
 		return list_post_insights;
 	}
 
-	public List<Map<String, String>> parseJSONInsight(
-			List<Connection<Insight>> post_insights) throws IOException {
-		write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH,
-				"==> PARSING JSON INSIGHTS");
+	public List<Map<String, String>> parseJSONInsight(List<Connection<Insight>> post_insights) throws IOException {
+		write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> PARSING JSON INSIGHTS");
 		List<List<Map<String, String>>> plist_insights = new ArrayList<List<Map<String, String>>>();
 		List<Map<String, String>> clist_insights = new ArrayList<Map<String, String>>();
 		List<String> list_tital_matrix = new ArrayList<String>();
@@ -183,19 +161,15 @@ public class FBPostConsumptionInsightByType {
 			for (JsonObject post_fields : list_post_fields) {
 				list_ppost_fields_id.add(post_fields.get("id").toString());
 				/*
-				 * list_ppost_fields_message
-				 * .add(post_fields.get("message").toString());
-				 * list_ppost_fields_type
-				 * .add(post_fields.get("type").toString());
+				 * list_ppost_fields_message .add(post_fields.get("message").toString());
+				 * list_ppost_fields_type .add(post_fields.get("type").toString());
 				 */
 			}
 			int k = 0;
-			write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH,
-					"==> CONVERTING JSON INSIGHTS TO CSV FORMAT");
+			write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> CONVERTING JSON INSIGHTS TO CSV FORMAT");
 			for (Connection<Insight> insights : post_insights) {
 				for (Insight insight : insights.getData()) {
-					List<Map<String, String>> flatJson = JSONFlattener
-							.parseJson(insight.getValues().toString());
+					List<Map<String, String>> flatJson = JSONFlattener.parseJson(insight.getValues().toString());
 					plist_insights.add(flatJson);
 					list_tital_matrix.add(insight.getName());
 				}
@@ -203,20 +177,13 @@ public class FBPostConsumptionInsightByType {
 				for (int i = 0; i < plist_insights.get(0).size(); i++) {
 					map_value_matrix = new LinkedHashMap<String, String>();
 					if (i == 0) {
-						map_value_matrix.put("Post ID",
-								list_ppost_fields_id.get(k));
+						map_value_matrix.put("Post ID", list_ppost_fields_id.get(k));
 					}
 					for (int j = 0; j < plist_insights.size(); j++) {
-						map_value_matrix.put("other clicks", plist_insights
-								.get(j).get(i).get("value.other clicks"));
-						map_value_matrix.put("photo view", plist_insights
-								.get(j).get(i).get("value.photo view"));
-						map_value_matrix.put(
-								"link clicks",
-								plist_insights.get(j).get(i)
-										.get("value.link clicks"));
-						map_value_matrix.put("video play", plist_insights
-								.get(j).get(i).get("value.video play"));
+						map_value_matrix.put("other clicks", plist_insights.get(j).get(i).get("value.other clicks"));
+						map_value_matrix.put("photo view", plist_insights.get(j).get(i).get("value.photo view"));
+						map_value_matrix.put("link clicks", plist_insights.get(j).get(i).get("value.link clicks"));
+						map_value_matrix.put("video play", plist_insights.get(j).get(i).get("value.video play"));
 					}
 				}
 				k++;
@@ -225,8 +192,7 @@ public class FBPostConsumptionInsightByType {
 			}
 		} catch (Exception e) {
 			write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH,
-					"==> EXCEPTION WHILE CONVERTING JSON INSIGHTS TO CSV FORMAT ==> "
-							+ e);
+					"==> EXCEPTION WHILE CONVERTING JSON INSIGHTS TO CSV FORMAT ==> " + e);
 			System.out.println(e);
 			System.exit(0);
 		}
@@ -234,32 +200,23 @@ public class FBPostConsumptionInsightByType {
 		return clist_insights;
 	}
 
-	public void writecsv(List<Map<String, String>> clist_insights)
-			throws Exception {
-		write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH,
-				"==> WRITING INSIGHTS INTO CSV FILE");
-		String POST_CONSUMPTIONS_INSIGHT_BY_TYPE_CSV_PATH = getPropValue(
-				propFilePath, "POST_CONSUMPTIONS_INSIGHT_BY_TYPE_CSV_PATH")
-				+ "\\"
-				/*+ getFromatedDate(POST_INSIGH_TO, "yyyy-MM-dd", "yyyyMMdd")
-				+ "\\"*/
-				+ getPropValue(propFilePath,
-						"POST_CONSUMPTIONS_INSIGHT_BY_TYPE_CSV_FILENAME")
-				+ "_"
-				+ getFromatedDate(CurrentDate, "yyyy-MM-dd", "yyyyMMdd")
-				+ ".csv";
+	public void writecsv(List<Map<String, String>> clist_insights) throws Exception {
+		write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> WRITING INSIGHTS INTO CSV FILE");
+		String POST_CONSUMPTIONS_INSIGHT_BY_TYPE_CSV_PATH = getPropValue(propFilePath,
+				"POST_CONSUMPTIONS_INSIGHT_BY_TYPE_CSV_PATH") + "\\"
+		/*
+		 * + getFromatedDate(POST_INSIGH_TO, "yyyy-MM-dd", "yyyyMMdd") + "\\"
+		 */
+				+ getPropValue(propFilePath, "POST_CONSUMPTIONS_INSIGHT_BY_TYPE_CSV_FILENAME") + "_"
+				+ getFromatedDate(CurrentDate, "yyyy-MM-dd", "yyyyMMdd") + ".csv";
 		try {
-			CSVWriter.writeToFile(CSVWriter.getCSV(clist_insights),
-					POST_CONSUMPTIONS_INSIGHT_BY_TYPE_CSV_PATH);
+			CSVWriter.writeToFile(CSVWriter.getCSV(clist_insights), POST_CONSUMPTIONS_INSIGHT_BY_TYPE_CSV_PATH);
 		} catch (Exception e) {
-			write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH,
-					"==> EXCEPTION WHILE WRITING INSIGHTS INTO CSV FILE ==> "
-							+ e);
+			write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> EXCEPTION WHILE WRITING INSIGHTS INTO CSV FILE ==> " + e);
 			System.out.println(e);
 			System.exit(0);
 		}
-		write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> CSV DOWNLOADED :"
-				+ POST_CONSUMPTIONS_INSIGHT_BY_TYPE_CSV_PATH);
+		write(POST_CONSUMPTIONS_INSIGHT_LOG_PATH, "==> CSV DOWNLOADED :" + POST_CONSUMPTIONS_INSIGHT_BY_TYPE_CSV_PATH);
 	}
 
 	public String getPropValue(String propFilePath, String propName) {
@@ -296,8 +253,7 @@ public class FBPostConsumptionInsightByType {
 		return cur_datetime;
 	}
 
-	public String getFromatedDate(String Date, String inputDateFormat,
-			String outputDateFormat) throws ParseException {
+	public String getFromatedDate(String Date, String inputDateFormat, String outputDateFormat) throws ParseException {
 		SimpleDateFormat dt = new SimpleDateFormat(inputDateFormat);
 		java.util.Date date = dt.parse(Date);
 		SimpleDateFormat dt1 = new SimpleDateFormat(outputDateFormat);
@@ -323,8 +279,7 @@ public class FBPostConsumptionInsightByType {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
-		else {
+		} else {
 			if (s.equalsIgnoreCase("remove")) {
 				try {
 					file.delete();

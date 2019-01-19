@@ -103,7 +103,8 @@ public class FBAdInsight {
 		obj_FBPage.write(AD_INSIGH_KEYMETRICS_LOG_PATH, "==> READING ACCESS TOKEN");
 
 		String ACCESS_TOKEN = obj_FBPage.getPropValue(propFilePath, "ACCESS_TOKEN");
-		//facebookClient = new DefaultFacebookClient(ACCESS_TOKEN, Version.VERSION_2_10);
+		// facebookClient = new DefaultFacebookClient(ACCESS_TOKEN,
+		// Version.VERSION_2_10);
 		facebookClient = new DefaultFacebookClient(ACCESS_TOKEN);
 		JsonObject adInsight_fields = obj_FBPage.fetchObject();
 		obj_FBPage.parseJSONInsight(adInsight_fields.toString());

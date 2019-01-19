@@ -7,7 +7,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>FacebookInsightExtract</name>
 	<description>Facebook Page/ Ad Insight Extract</description>
-	
+
 	<developers>
 		<developer>
 			<email>niits007@gmail.com</email>
@@ -15,9 +15,10 @@
 			<id>niits007</id>
 		</developer>
 	</developers>
-	
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<timestamp>${maven.build.timestamp}</timestamp>
 		<commons.io.version>2.4</commons.io.version>
 		<commons.lang.version>3.3.2</commons.lang.version>
 		<log4j.version>1.2.17</log4j.version>
@@ -99,7 +100,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
